@@ -17,6 +17,7 @@ package org.jboss.netty.buffer;
 
 import static org.jboss.netty.buffer.ChannelBuffers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,6 +32,9 @@ import org.jboss.netty.util.CharsetUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.IsNot.not;
 
 /**
  * An abstract test class for channel buffers
@@ -1711,5 +1715,20 @@ public abstract class AbstractChannelBufferTest {
         buffer.writerIndex(buffer.capacity());
         buffer.readerIndex(buffer.writerIndex());
         buffer.discardReadBytes();
+    }
+
+    @Test
+    public void testWrittenEmptyBufferIsNotReadable() {
+        assumeThat(buffer, not(instanceOf(DynamicChannelBuffer.class)));
+        assumeThat(buffer, not(instanceOf(SlicedChannelBuffer.class)));
+
+        ChannelBuffer buffer = newBuffer(0);
+
+        try {
+            buffer.writeByte(0);
+        } catch (IndexOutOfBoundsException expected) {
+        }
+
+        assertFalse(buffer.readable());
     }
 }
